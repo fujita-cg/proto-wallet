@@ -1,0 +1,19 @@
+{
+  "name": "proto-wallet",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cfd-js": "git+https://github.com/cryptogarageinc/cfd-js.git#v0.0.10",
+    "node-json-rpc2": "git+https://github.com/ko-matsu/node-json-rpc2.git#async_minimum"
+  },
+  "devDependencies": {
+    "ini": "^1.3.5",
+    "jest": "^24.9.0"
+  }
+}
