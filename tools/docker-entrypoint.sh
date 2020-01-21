@@ -1,7 +1,5 @@
 #!/bin/bash -u
 
-# while :; do sleep 10; done
-
 bitcoind --regtest
 bitcoin-cli --regtest ping > /dev/null 2>&1
 while [ $? -ne 0 ]
@@ -23,4 +21,6 @@ echo "start elements node"
 set -e
 
 cd /root/wallet-test/
-npm install && npm test
+npm install
+
+# while :; do sleep 10; done

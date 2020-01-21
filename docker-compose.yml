@@ -1,15 +1,50 @@
 version: '3.5'
 
 services:
-  proto-wallet:
-    image: cryptogarageinc/proto-wallet:latest
-    container_name: 'proto-wallet_latest'
+  bitcoin:
+    image: 'bitcoin'
+    container_name: 'bitcoin'
     build:
-      dockerfile: "./docker/Dockerfile"
-      context: .
+      context: 'docker'
+      dockerfile: 'endnode.dockerfile'
+      target: 'bitcoin-base'
     volumes:
-      - "./docker/fixtures/bitcoin.conf:/root/.bitcoin/bitcoin.conf"
-      - "./docker/fixtures/elements.conf:/root/.elements/elements.conf"
-      - "./tools/docker-entrypoint.sh:/root/docker-entrypoint.sh"
-      - ".:/root/wallet-test/"
-    entrypoint: "sh -c \"/root/docker-entrypoint.sh\""
+      - './docker/fixtures/bitcoin.conf:/root/.bitcoin/bitcoin.conf'
+    ports:
+      - "127.0.0.1:18442:18442"
+      - "127.0.0.1:18443:18443"
+    networks:
+      - app_network
+
+  elements:
+    image: 'elements'
+    container_name: 'elements'
+    build:
+      context: 'docker'
+      dockerfile: 'endnode.dockerfile'
+      target: 'elements-base'
+    volumes:
+      - './docker/fixtures/elements.conf:/root/.elements/elements.conf'
+    depends_on:
+      - bitcoin
+    ports:
+      - "127.0.0.1:18444:18444"
+      - "127.0.0.1:18445:18445"
+    networks:
+      - app_network
+
+  proto-wallet:
+    image: proto-wallet
+    container_name: 'proto-wallet'
+    build:
+      context: .
+      dockerfile: './docker/endnode.dockerfile'
+    volumes:
+      - './tools/docker-entrypoint.sh:/root/docker-entrypoint.sh'
+      - '.:/root/wallet-test/'
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    external: true

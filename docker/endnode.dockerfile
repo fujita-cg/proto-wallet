@@ -1,17 +1,14 @@
-FROM node:12.14.1-buster-slim
+FROM ubuntu:18.04 AS bitcoin-base
 
-# install dependencies
 RUN apt update && apt install -y \
     gpg \
     wget \
-    build-essential \
-    python \
-    git \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /tmp
+# set up bitcoind
+
 ENV GPG_KEY_SERVER hkp://keyserver.ubuntu.com:80
-# setup bitcoin
+WORKDIR /tmp
 ARG BITCOIN_VERSION=0.18.1
 ENV BITCOIN_TARBALL bitcoin-${BITCOIN_VERSION}-x86_64-linux-gnu.tar.gz
 ENV BITCOIN_URL https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/$BITCOIN_TARBALL
@@ -26,7 +23,12 @@ RUN wget -qO ${BITCOIN_TARBALL} ${BITCOIN_URL} \
     && ln -sfn /opt/bitcoin-${BITCOIN_VERSION}/bin/* /usr/bin \
     && rm -f ${BITCOIN_TARBALL} SHA256SUMS.asc
 
-# setup elements
+CMD ["bitcoind", "--regtest"]
+
+# set up elementsd
+
+FROM bitcoin-base AS elements-base
+
 ARG ELEMENTS_VERSION=0.18.1.3
 ENV ELEMENTS_TARBALL elements-${ELEMENTS_VERSION}-x86_64-linux-gnu.tar.gz
 ENV ELEMENTS_URL https://github.com/ElementsProject/elements/releases/download/elements-${ELEMENTS_VERSION}/$ELEMENTS_TARBALL
@@ -41,7 +43,23 @@ RUN wget -qO ${ELEMENTS_TARBALL} ${ELEMENTS_URL} \
   && ln -sfn /opt/elements-${ELEMENTS_VERSION}/bin/* /usr/bin \
   && rm -f ${ELEMENTS_TARBALL} SHA256SUMS.asc
 
+CMD ["elementsd", "-chain=liquidregtest"]
+
+# set up app base
+
+FROM node:12.14.1-buster-slim AS app-base
+
+# install dependencies
+RUN apt update && apt install -y \
+    gpg \
+    wget \
+    build-essential \
+    python \
+    git \
+  && rm -rf /var/lib/apt/lists/*
+
 # setup cmake
+ENV GPG_KEY_SERVER hkp://keyserver.ubuntu.com:80
 ENV CMAKE_VERSION 3.16.2
 RUN wget -qO cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
   && gpg --keyserver ${GPG_KEY_SERVER} --recv-keys 2D2CEF1034921684 \
@@ -53,6 +71,16 @@ RUN wget -qO cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz https://github.com/Kitwa
   && rm -f cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz cmake-${CMAKE_VERSION}-SHA-256.txt cmake-${CMAKE_VERSION}-SHA-256.txt.asc \
 ENV PATH /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin:${PATH}
 
-WORKDIR /root
+# WORKDIR /root/wallet-app
 
-# TODO: set ENTRYPOINT
+# COPY package.json package-lock.json ./
+
+# RUN npm install
+
+# COPY . .
+
+# ENTRYPOINT ["npm", "run"]
+
+COPY --from=bitcoin-base /usr/bin/bitcoin* /usr/bin/
+
+CMD ["bitcoin-cli", "--regtest", "getbalance"]
