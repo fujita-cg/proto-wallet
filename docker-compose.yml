@@ -5,8 +5,11 @@ services:
     image: cryptogarageinc/proto-wallet:latest
     container_name: 'proto-wallet_latest'
     build:
-      dockerfile: "docker/Dockerfile"
+      dockerfile: "./docker/Dockerfile"
       context: .
     volumes:
-      - "./docker/fixtures/bitcoin.conf:/root/.bitcoin/"
-      - "./docker/fixtures/elements.conf:/root/.elements/"
+      - "./docker/fixtures/bitcoin.conf:/root/.bitcoin/bitcoin.conf"
+      - "./docker/fixtures/elements.conf:/root/.elements/elements.conf"
+      - "./tools/docker-entrypoint.sh:/root/docker-entrypoint.sh"
+      - ".:/root/wallet-test/"
+    entrypoint: "sh -c \"/root/docker-entrypoint.sh\""

@@ -43,7 +43,7 @@ RUN wget -qO ${ELEMENTS_TARBALL} ${ELEMENTS_URL} \
 
 # setup cmake
 ENV CMAKE_VERSION 3.16.2
-RUN wget -qO cmake-${CMAKE_VERSION}}-Linux-x86_64.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+RUN wget -qO cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
   && gpg --keyserver ${GPG_KEY_SERVER} --recv-keys 2D2CEF1034921684 \
   && wget -qO cmake-${CMAKE_VERSION}-SHA-256.txt https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-SHA-256.txt \
   && wget -qO cmake-${CMAKE_VERSION}-SHA-256.txt.asc https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-SHA-256.txt.asc \
@@ -52,5 +52,7 @@ RUN wget -qO cmake-${CMAKE_VERSION}}-Linux-x86_64.tar.gz https://github.com/Kitw
   && tar -xzvf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz --directory=/opt/ \
   && rm -f cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz cmake-${CMAKE_VERSION}-SHA-256.txt cmake-${CMAKE_VERSION}-SHA-256.txt.asc \
 ENV PATH /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin:${PATH}
+
+WORKDIR /root
 
 # TODO: set ENTRYPOINT
