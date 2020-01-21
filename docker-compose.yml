@@ -1,21 +1,12 @@
 version: '3.5'
 
 services:
-  endnode-base:
-    image: cryptogarageinc/endnode-base:latest
-    container_name: 'endnode-base_latest'
-    build:
-      context: integration
-      dockerfile: ./integration/endnode-base.dockerfile
-
   proto-wallet:
     image: cryptogarageinc/proto-wallet:latest
     container_name: 'proto-wallet_latest'
     build:
+      dockerfile: "docker/Dockerfile"
       context: .
-      dockerfile: proto-wallet.dockerfile
     volumes:
-      - "./fixture/bitcoin.conf:/root/.bitcoin/"
-      - "./fixture/elements.conf:/root/.elements/"
-    depends_on:
-      - endnode-base
+      - "./docker/fixtures/bitcoin.conf:/root/.bitcoin/"
+      - "./docker/fixtures/elements.conf:/root/.elements/"
