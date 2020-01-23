@@ -1,6 +1,7 @@
 const database = require('../src/libs/db/db');
 const ConfigTable = require('../src/libs/db/configTable');
 const AddressTable = require('../src/libs/db/addressTable');
+const UtxoTable = require('../src/libs/db/utxoTable');
 
 const main = async () => {
   let ret;
@@ -91,13 +92,13 @@ const main = async () => {
   console.log('addrTbl pubkey1 getPubkeyAddress2  = ', addrRet22);
   console.log('addrTbl pubkey1 getPubkeyAddresses = ', addrRet31);
 
-  ret = await addrTbl.deleteFromAddress('n3ptiz3wRp5kZswtNMpGDbJJoJLKz8WfoS');
-  console.log('addrTbl pubkey1 deleteFromAddress = ', ret);
+  ret = await addrTbl.deleteByAddress('n3ptiz3wRp5kZswtNMpGDbJJoJLKz8WfoS');
+  console.log('addrTbl pubkey1 deleteByAddress = ', ret);
   const addrRet32 = await addrTbl.getPubkeyAddresses(pubkey1);
   console.log('addrTbl pubkey1 getPubkeyAddresses = ', addrRet32);
 
-  ret = await addrTbl.deleteFromPubkey(pubkey1);
-  console.log('addrTbl pubkey1 deleteFromPubkey = ', ret);
+  ret = await addrTbl.deleteByPubkey(pubkey1);
+  console.log('addrTbl pubkey1 deleteByPubkey = ', ret);
   const addrRet33 = await addrTbl.getPubkeyAddresses(pubkey1);
   console.log('addrTbl pubkey1 getPubkeyAddresses = ', addrRet33);
 
@@ -115,9 +116,52 @@ const main = async () => {
   console.log('addrTbl script getScriptAddress   = ', addrRet42);
   console.log('addrTbl script getScriptAddresses = ', JSON.stringify(addrRet43, null, ' '));
 
-  ret = await addrTbl.deleteFromScript(multisigScript);
-  console.log('addrTbl script deleteFromScript = ', ret);
+  ret = await addrTbl.deleteByScript(multisigScript);
+  console.log('addrTbl script deleteByScript = ', ret);
   const addrRet44 = await addrTbl.getScriptAddresses(multisigScript);
   console.log('addrTbl script getScriptAddresses = ', JSON.stringify(addrRet44, null, ' '));
+
+  // UtxoTable
+  const utxoTbl = new UtxoTable(walletName, dir);
+  // utxoTbl.initialize();
+  await utxoTbl.addUtxo(
+      txid = '2d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1',
+      vout = 0, amount = 10000,
+      address = 'bcrt1q7jm5vw5cunpy3lkvwdl3sr3qfm794xd46h0u0k',
+      descriptor = 'wpkh(031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1)',
+      lockingScript = '0014f4b7463a98e4c248fecc737f180e204efc5a99b5');
+  await utxoTbl.addUtxo(
+      txid = '3d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1',
+      vout = 0, amount = 12000,
+      address = 'bcrt1q7jm5vw5cunpy3lkvwdl3sr3qfm794xd46h0u0k',
+      descriptor = 'wpkh(031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1)',
+      lockingScript = '0014f4b7463a98e4c248fecc737f180e204efc5a99b5');
+  await utxoTbl.addUtxo(
+      txid = '4d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1',
+      vout = 1, amount = 20000,
+      address = '2MsmYwi6mZfo9Qk2Yz6HwXTD5u2LnsBn7qQ',
+      descriptor = 'sh(wpkh(031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1))',
+      lockingScript = 'a91405bc4d5d12925f008cef06ba387ade16a49d7a3187');
+  const utxoRet1 = await utxoTbl.getUtxoCount();
+  const utxoRet2 = await utxoTbl.getUtxoByOutpoint('3d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1,0');
+  console.log('utxoTbl getUtxoCount          = ', utxoRet1);
+  console.log('utxoTbl getUtxoByOutpoint     = ', utxoRet2);
+  const utxoRet3 = await utxoTbl.getUtxosByAddress('bcrt1q7jm5vw5cunpy3lkvwdl3sr3qfm794xd46h0u0k');
+  console.log('utxoTbl getUtxosByAddress     = ', utxoRet3);
+  const utxoRet4 = await utxoTbl.getUtxosUnspentable();
+  console.log('utxoTbl getUtxosUnspentable   = ', utxoRet4);
+
+  const utxoRet5 = await utxoTbl.updateSpentable('3d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1,0', true);
+  const utxoRet6 = await utxoTbl.getUtxosUnspentable();
+  const utxoRet7 = await utxoTbl.getUtxos();
+  console.log('utxoTbl updateSpentable       = ', utxoRet5);
+  console.log('utxoTbl getUtxosUnspentable2  = ', utxoRet6);
+  console.log('utxoTbl getUtxos              = ', utxoRet7);
+
+  const utxoRet8 = await utxoTbl.deleteByOutpoint('4d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1,1');
+  const utxoRet9 = await utxoTbl.getUtxos();
+  console.log('utxoTbl deleteByOutpoint      = ', utxoRet8);
+  console.log('utxoTbl getUtxos              = ', utxoRet9);
+  await utxoTbl.deleteByOutpoint('3d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1,0');
 };
 main();

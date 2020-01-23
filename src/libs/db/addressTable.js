@@ -28,13 +28,17 @@ module.exports = class AddressTable {
 
   // disable update
 
-  async deleteFromPubkey(pubkey) {
+  async deleteAll() {
+    return await this.database.delete({}, {multi: true});
+  };
+
+  async deleteByPubkey(pubkey) {
     return await this.database.delete({pubkey: pubkey}, {multi: true});
   };
-  async deleteFromScript(script) {
+  async deleteByScript(script) {
     return await this.database.delete({script: script}, {multi: true});
   };
-  async deleteFromAddress(address) {
+  async deleteByAddress(address) {
     return await this.database.delete({address: address});
   };
 
@@ -42,8 +46,20 @@ module.exports = class AddressTable {
     return await this.database.findOne({address: address});
   };
 
+  async getAddressesAll(page = 1, perPage = 100) {
+    return await this.database.find(page, perPage);
+  };
+
   async getAddressesByPath(hdkeyPath) {
-    return await this.database.find({path: hdkeyPath});
+    return await this.database.find(query = {path: hdkeyPath});
+  };
+
+  async getAddressesByContainPath(hdkeyPath, page = 1, perPage = 100) {
+    return await this.database.findSorted(query = {
+      $where: function() {
+        return (this.path && !(this.path.indexOf(hdkeyPath) == -1));
+      },
+    }, page, perPage);
   };
 
   async getPubkeyAddress(pubkey, addressType) {
@@ -53,10 +69,20 @@ module.exports = class AddressTable {
     return await this.database.find({pubkey: pubkey});
   };
 
+  async getPubkeyAddressesAll(page = 1, perPage = 100) {
+    return await this.database.findSorted(
+        {pubkey: {$exists: true}}, page, perPage);
+  };
+
   async getScriptAddress(script, addressType) {
     return await this.database.findOne({script: script, type: addressType});
   };
   async getScriptAddresses(script) {
     return await this.database.find({script: script});
+  };
+
+  async getScriptAddressesAll(page = 1, perPage = 100) {
+    return await this.database.findSorted(
+        {script: {$exists: true}}, page, perPage);
   };
 };

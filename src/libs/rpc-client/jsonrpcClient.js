@@ -10,13 +10,13 @@ const executeRpc = async function(client, method, params) {
   } else return res.result;
 };
 
-exports.createConnection = function(host, port, id, password) {
+exports.createConnection = function(host, port, id, password, connectId = '') {
   const config = {
     host: host,
     user: id,
     password: password,
     port: port,
-    id: 'elements-rpc',
+    id: connectId,
   };
   return config;
 };

@@ -1,6 +1,7 @@
 const db = require('./db');
 const KeyNetworkType = 'network';
 const KeyBip32Count = 'bip32Count';
+const KeyBip32FeeCount = 'bip32FeeCount';
 const KeyBlindCount = 'blindCount';
 
 module.exports = class ConfigTable {
@@ -28,6 +29,11 @@ module.exports = class ConfigTable {
       return false;
     }
     ret = await this.database.insert(
+        {key: KeyBip32FeeCount, value: 0}, {key: KeyBip32FeeCount});
+    if (ret === false) {
+      return false;
+    }
+    ret = await this.database.insert(
         {key: KeyBlindCount, value: 0}, {key: KeyBlindCount});
     if (ret === false) {
       return false;
@@ -40,6 +46,11 @@ module.exports = class ConfigTable {
   async updateBip32Count(count) {
     return await this.database.update(
         {key: KeyBip32Count}, {$set: {value: count}});
+  };
+
+  async updateBip32FeeCount(count) {
+    return await this.database.update(
+        {key: KeyBip32FeeCount}, {$set: {value: count}});
   };
 
   async updateBlindingKeyCount(count) {
@@ -58,6 +69,14 @@ module.exports = class ConfigTable {
 
   async getBip32Count() {
     const ret = await this.database.findOne(query = {key: KeyBip32Count});
+    if (!ret) {
+      return false;
+    }
+    return ret.value;
+  };
+
+  async getBip32FeeCount() {
+    const ret = await this.database.findOne(query = {key: KeyBip32FeeCount});
     if (!ret) {
       return false;
     }

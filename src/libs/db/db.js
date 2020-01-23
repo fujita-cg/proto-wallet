@@ -32,15 +32,30 @@ exports.createDatabase = function(name = 'db', dirPath = './') {
     return await datastore.find(query, projection);
   };
 
-  this.findOne = async function(query = {}, projection, sortQuery = {}) {
+  this.findOne = async function(query = {}, projection = {}, sortQuery = {}) {
     return await datastore.findOne(query, projection).sort(sortQuery);
   };
 
-  this.findSorted = async function(query = {}, projection,
-      sortQuery = {}, page, perPage = 10) {
-    return await datastore.find(query, projection).sort(sortQuery)
-        .limit(perPage)
-        .skip(page * perPage);
+  this.findSorted = async function(query = {}, page = 1, perPage = 10,
+      projection = {}, sortQuery = {}, secondQuery = {}) {
+    if (page <= 1) {
+      if (Object.keys(secondQuery).length > 0) {
+        return await datastore.find(query, projection).find(secondQuery)
+            .sort(sortQuery).limit(perPage);
+      } else {
+        return await datastore.find(query, projection).sort(sortQuery)
+            .limit(perPage);
+      }
+    } else {
+      const skipNum = (page - 1) * perPage;
+      if (Object.keys(secondQuery).length > 0) {
+        return await datastore.find(query, projection).find(secondQuery)
+            .limit(perPage).skip(skipNum);
+      } else {
+        return await datastore.find(query, projection)
+            .limit(perPage).skip(skipNum);
+      }
+    }
   };
 
   this.count = async function(query = {}) {
